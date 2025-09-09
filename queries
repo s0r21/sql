@@ -1,0 +1,73 @@
+# This is a SQL script that looks at how to write a sub query
+
+# Apache Spark
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("SQLinPySpark").getOrCreate()
+
+# Subqueries
+spark.sql("""
+SELECT 
+  YEAR(c.date) AS YearDate,
+  COUNT(DISTINCT(c.Id)) AS CanadianCustomers,
+  tc.AllCustomers AS AllCustomers,
+  (COUNT(DISTINCT(c.Id)) / tc.AllCustomers) AS CanadianCustomerPercentage
+FROM customers c
+INNER JOIN ( -- Subquery listed here
+  SELECT 
+    YEAR(to.date) AS TotalYearDate,
+    COUNT(DISTINCT(to.Id)) AS AllCustomers
+  FROM customers c
+) tc 
+  ON totalcustomers.totalYearDate = YEAR(to.date)
+WHERE c.country = 'Canada'
+GROUP BY ALL
+;""").show()
+
+# Having with more than 4 sales
+spark.sql("""
+SELECT 
+  c.Id AS CustomerId,
+  COUNT(DISTINCT(t.Id)) AS NumberofTransactions
+FROM customers c
+INNER JOIN transactions t
+  ON t.customerId = c.Id
+GROUP BY ALL
+HAVING COUNT(DISTINCT(t.Id)) >= 4
+ORDER BY COUNT(DISTINCT(t.Id)) DESC
+;""").show()
+
+# CTE
+spark.sql("""
+WITH CustomerTransactions AS (
+SELECT 
+  c.Id AS CustomerId,
+  COUNT(DISTINCT(t.Id)) AS NumberofTransactions
+FROM customers c
+INNER JOIN transactions t
+  ON t.customerId = c.Id
+GROUP BY ALL
+)
+SELECT
+  SUM(ct.NumberofTransactions) AS TotalTransactions, -- # Number of total customer transactions
+  AVG(ct.NumberofTransactions) AS AverageNumberofTransactions -- # of Transactions
+FROM CustomerTransactions ct
+;""")
+
+# Partion 
+spark.sql("""
+WITH RecentTransaction AS (
+SELECT 
+t.CustomerId AS CustomerId,
+t.AmountPaid AS LastAmountPaid,
+ROW_NUMBER() OVER (PARTITION BY t.CustomerId ORDER BY t.PurchaseDate DESC) AS MostRecentDate
+FROM transactions t
+)
+
+SELECT 
+*
+customers c
+INNER JOIN RecentTransaction rt
+  ON rt.CustomerId = c.Id AND rt.MostRecentDate = 1 -- Getting the most recent date 
+;""")
