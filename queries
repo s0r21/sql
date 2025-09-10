@@ -53,7 +53,7 @@ SELECT
   SUM(ct.NumberofTransactions) AS TotalTransactions, -- # Number of total customer transactions
   AVG(ct.NumberofTransactions) AS AverageNumberofTransactions -- # of Transactions
 FROM CustomerTransactions ct
-;""")
+;""").show()
 
 # Partion 
 spark.sql("""
@@ -70,4 +70,20 @@ SELECT
 customers c
 INNER JOIN RecentTransaction rt
   ON rt.CustomerId = c.Id AND rt.MostRecentDate = 1 -- Getting the most recent date 
+;""").show()
+
+# Creating tables / views
+
+spark.sql("""
+CREATE OR REPLACE TABLE toptencustomers ( -- Note: Can change table to VIEW in this case.
+SELECT 
+  c.Id AS CustomerId,
+  COUNT(DISTINCT(t.Id)) AS NumberofTransactions
+FROM customers c
+INNER JOIN transactions t
+  ON t.customerId = c.Id
+GROUP BY ALL
+ORDER BY COUNT(DISTINCT(t.Id)) DESC
+LIMIT 10
+)
 ;""")
