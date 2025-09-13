@@ -87,3 +87,17 @@ ORDER BY COUNT(DISTINCT(t.Id)) DESC
 LIMIT 10
 )
 ;""")
+
+# Case statement - Using the CTE in the previous statement for simplicity sake
+SELECT 
+CASE
+  WHEN DATEDIFF(DAY, rt.MostRecentDate, GETDATE()) <= 7 THEN "Transactionwithin7Days"
+  WHEN DATEDIFF(DAY, rt.MostRecentDate, GETDATE()) BETWEEN 8 AND 14 THEN "TransactionBetweenEightAndFourteenDays"
+  ELSE "TransactionsOverFourteenDays"
+END AS 'DaysFromLastTransaction',
+COUNT(DISTINCT(c.Id)) AS NumberOfCustomers
+customers c
+INNER JOIN RecentTransaction rt
+  ON rt.CustomerId = c.Id AND rt.MostRecentDate = 1 -- Getting the most recent date
+WHERE DATEDIFF(DAY, rt.MostRecentDate, GETDATE()) <= 60 -- Only looking at the past 60 days worth of data.
+;""")
