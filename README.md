@@ -2,6 +2,8 @@
 
 **Point of Document:** The purpose of this document is to outline the common SQL queries I've used to pull data, create tables/views, ctes, etc. Although queries do get more complex than this, these are the highlevel ones that I use on a daily basis. 
 
+**NOTE:** I'm using the spark.sql() function in this case to outline what it would look like if we were to code this in pyspark. 
+
 *Outlining the following:*
 - pulling in data using spark - using spark.sql() function to properly use SQL scripts in python
 - Subqueries - joining onto a dataset by using it as a filter (inner join) and/or to figure out aggregates and partioning.
