@@ -49,6 +49,7 @@ INNER JOIN transactions t
   ON t.customerId = c.Id
 GROUP BY ALL
 )
+
 SELECT
   SUM(ct.NumberofTransactions) AS TotalTransactions, -- # Number of total customer transactions
   AVG(ct.NumberofTransactions) AS AverageNumberofTransactions -- # of Transactions
@@ -86,7 +87,7 @@ GROUP BY ALL
 ORDER BY COUNT(DISTINCT(t.Id)) DESC
 LIMIT 10
 )
-;""")
+;""").show()
 
 # Case statement - Using the CTE in the previous statement for simplicity sake
 SELECT 
@@ -100,4 +101,17 @@ customers c
 INNER JOIN RecentTransaction rt
   ON rt.CustomerId = c.Id AND rt.MostRecentDate = 1 -- Getting the most recent date
 WHERE DATEDIFF(DAY, rt.MostRecentDate, GETDATE()) <= 60 -- Only looking at the past 60 days worth of data.
+GROUP BY ALL
 ;""").show()
+
+# Aggregate functions
+spark.sql("""
+SELECT 
+  c.Id AS CustomerId,
+  t.TransactionDate AS TransactionDate,
+  SUM(t.AmountPaid) OVER (PARTITION BY c.CustomerId ORDER BY t.TransactionDate ASC) AS CumulativeAmount
+FROM customers c
+INNER JOIN transactions t
+  ON t.CustomerId = c.Id
+GROUP BY c.Id, t.TransactionDate
+;""")
