@@ -114,4 +114,4 @@ FROM customers c
 INNER JOIN transactions t
   ON t.CustomerId = c.Id
 GROUP BY c.Id, t.TransactionDate
-;""")
+;""").show()
