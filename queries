@@ -100,4 +100,4 @@ customers c
 INNER JOIN RecentTransaction rt
   ON rt.CustomerId = c.Id AND rt.MostRecentDate = 1 -- Getting the most recent date
 WHERE DATEDIFF(DAY, rt.MostRecentDate, GETDATE()) <= 60 -- Only looking at the past 60 days worth of data.
-;""")
+;""").show()
